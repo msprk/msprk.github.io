@@ -48,14 +48,15 @@
     .card-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
     .card-name{font-size:13px;font-weight:500;text-align:center}
     @media(max-width:400px){.grid{grid-template-columns:repeat(2,1fr)}}
-    .changelog{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-top:16px;text-align:left}
-    .changelog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .changelog-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
-    .changelog-date{font-size:11px;color:var(--muted)}
-    .changelog-app{font-size:11px;font-weight:600;color:var(--accent);margin:8px 0 3px}
-    .changelog-app:first-of-type{margin-top:0}
-    .changelog-item{font-size:12px;color:var(--text);padding:2px 0 2px 10px;position:relative}
-    .changelog-item::before{content:"·";position:absolute;left:2px;color:var(--muted)}
+    .cl-popup{display:none;position:fixed;bottom:56px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:340px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:100;text-align:left}
+    .cl-popup.open{display:block}
+    .cl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .cl-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+    .cl-date{font-size:11px;color:var(--muted)}
+    .cl-app{font-size:11px;font-weight:600;color:var(--accent);margin:8px 0 3px}
+    .cl-app:first-of-type{margin-top:0}
+    .cl-item{font-size:12px;color:var(--text);padding:2px 0 2px 10px;position:relative}
+    .cl-item::before{content:"·";position:absolute;left:2px;color:var(--muted)}
     .badge-wrap{position:relative;display:inline-flex}
     .app-badge{position:absolute;top:-6px;right:-6px;background:#c0392b;color:#fff;border-radius:10px;font-size:10px;font-weight:700;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;line-height:1;pointer-events:none}
   </style>
@@ -115,25 +116,27 @@
         <span class="card-name">Kamerový systém</span>
       </a>
     </div>
-    <div class="changelog">
-      <div class="changelog-header">
-        <span class="changelog-title">Zmeny</span>
-        <span class="changelog-date">18. 5. 2026</span>
-      </div>
-      <div class="changelog-app">Evidencia TPZO</div>
-      <div class="changelog-item">Dátum narodenia zmenený na 3 polia DD / MM / RRRR</div>
-      <div class="changelog-item">Väčší náhľad fotky + lightbox po kliknutí</div>
-      <div class="changelog-item">Aktualizované a zoradené dôvody založenia (25 možností)</div>
-      <div class="changelog-app">Kamerový systém</div>
-      <div class="changelog-item">Grafy hliadky a pracovníka riadia sa podľa počtu záznamov</div>
-      <div class="changelog-item">Pridaný graf podľa typu udalosti</div>
-      <div class="changelog-app">Dashboard</div>
-      <div class="changelog-item">Notifikačný badge s počtom aktívnych TPZOV</div>
-      <div class="changelog-item">TPZO na prvom mieste, závady a aktivity dočasne skryté</div>
-      <div class="changelog-item">Premenovaný na Mestská Polícia Ružomberok</div>
-    </div>
   </main>
-  <footer style="text-align:center;padding:16px 0 24px;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em">v1.0</footer>
+  <div class="cl-popup" id="cl-popup">
+    <div class="cl-header">
+      <span class="cl-title">Zmeny</span>
+      <span class="cl-date">18. 5. 2026</span>
+    </div>
+    <div class="cl-app">Evidencia TPZO</div>
+    <div class="cl-item">Dátum narodenia zmenený na 3 polia DD / MM / RRRR</div>
+    <div class="cl-item">Väčší náhľad fotky + lightbox po kliknutí</div>
+    <div class="cl-item">Aktualizované a zoradené dôvody založenia (25 možností)</div>
+    <div class="cl-app">Kamerový systém</div>
+    <div class="cl-item">Grafy hliadky a pracovníka riadia sa podľa počtu záznamov</div>
+    <div class="cl-item">Pridaný graf podľa typu udalosti</div>
+    <div class="cl-app">Dashboard</div>
+    <div class="cl-item">Notifikačný badge s počtom aktívnych TPZOV</div>
+    <div class="cl-item">TPZO na prvom mieste, závady a aktivity dočasne skryté</div>
+    <div class="cl-item">Premenovaný na Mestská Polícia Ružomberok</div>
+  </div>
+  <footer style="text-align:center;padding:16px 0 24px;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em">
+    <span onclick="document.getElementById('cl-popup').classList.toggle('open');event.stopPropagation()" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px">v1.0</span>
+  </footer>
 </div>
 
 <script type="module">
@@ -224,6 +227,10 @@
     err.textContent = msg;
     err.style.display = "block";
   }
+
+  // Changelog popup – zatvoriť kliknutím mimo
+  document.addEventListener("click", () => document.getElementById("cl-popup")?.classList.remove("open"));
+  document.getElementById("cl-popup")?.addEventListener("click", e => e.stopPropagation());
 
   // Allow Enter key
   document.getElementById("login-password").addEventListener("keydown", e => {
