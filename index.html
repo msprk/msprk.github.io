@@ -48,6 +48,8 @@
     .card-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
     .card-name{font-size:13px;font-weight:500;text-align:center}
     @media(max-width:400px){.grid{grid-template-columns:repeat(2,1fr)}}
+    .badge-wrap{position:relative;display:inline-flex}
+    .app-badge{position:absolute;top:-6px;right:-6px;background:#c0392b;color:#fff;border-radius:10px;font-size:10px;font-weight:700;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;line-height:1;pointer-events:none}
   </style>
 </head>
 <body>
@@ -102,7 +104,10 @@
         <span class="card-name">Závady v meste</span>
       </a>
       <a class="card" href="https://msprk.github.io/tpzo/">
-        <div class="card-icon" style="background:#fde8e6">🔒</div>
+        <div class="badge-wrap">
+          <div class="card-icon" style="background:#fde8e6">🔒</div>
+          <span class="app-badge" id="tpzo-badge" style="display:none"></span>
+        </div>
         <span class="card-name">Evidencia TPZO</span>
       </a>
       <a class="card" href="https://msprk.github.io/aktivity/">
@@ -116,6 +121,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyDOYPIXjbW3mrFpospLjTbt6ui4I318sg8",
@@ -129,13 +135,39 @@
 
   const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db   = getDatabase(app);
+
+  let tpzoUnsubscribe = null;
+
+  function startTpzoListener() {
+    if (tpzoUnsubscribe) return;
+    tpzoUnsubscribe = onValue(ref(db, "tpzo"), snap => {
+      const data = snap.val() || {};
+      const count = Object.values(data).filter(r => r.status !== "done").length;
+      const badge = document.getElementById("tpzo-badge");
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
+    });
+  }
+
+  function stopTpzoListener() {
+    if (tpzoUnsubscribe) { tpzoUnsubscribe(); tpzoUnsubscribe = null; }
+    const badge = document.getElementById("tpzo-badge");
+    if (badge) badge.style.display = "none";
+  }
 
   onAuthStateChanged(auth, user => {
     document.getElementById("loading-screen").style.display = "none";
     if (user) {
       document.getElementById("login-screen").style.display     = "none";
       document.getElementById("dashboard-screen").style.display = "block";
+      startTpzoListener();
     } else {
+      stopTpzoListener();
       document.getElementById("login-screen").style.display     = "flex";
       document.getElementById("dashboard-screen").style.display = "none";
       const btn = document.getElementById("login-btn");
